@@ -61,4 +61,3 @@ if ($method === 'DELETE') {
     write_csv($filename, array_values($rows));
     send_response(['status' => 'success']);
 }
-?>

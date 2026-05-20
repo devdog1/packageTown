@@ -1,0 +1,7 @@
+[Wed May 20 19:57:29 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Wed May 20 19:57:31 2026] [::1]:51012 Accepted
+[Wed May 20 19:57:31 2026] [::1]:51012 [200]: GET /api/towns.php
+[Wed May 20 19:57:31 2026] [::1]:51012 Closing
+[Wed May 20 19:57:31 2026] [::1]:51028 Accepted
+[Wed May 20 19:57:31 2026] [::1]:51028 [200]: GET /api/packages.php
+[Wed May 20 19:57:31 2026] [::1]:51028 Closing

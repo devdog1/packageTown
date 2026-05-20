@@ -132,4 +132,3 @@ function generate_id($rows, $id_key) {
     }
     return $max_id + 1;
 }
-?>
