@@ -1,2 +1,2 @@
-package_id,package_name,speed
-PKG1,Starter,100Mbps
+package_id,package_name,download_speed,upload_speed
+PKG1,Starter,100Mbps,20Mbps

@@ -65,6 +65,7 @@ if (isset($_GET['edit'])) {
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
     </header>

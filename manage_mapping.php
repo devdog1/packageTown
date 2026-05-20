@@ -48,7 +48,7 @@ $node_lookup = [];
 foreach ($nodes_pons as $n) $node_lookup[$n['node_pon_id']] = $n['city'] . " - " . $n['node_pon_name'];
 
 $pkg_lookup = [];
-foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . " (" . $p['speed'] . ")";
+foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . " (" . $p['download_speed'] . "/" . $p['upload_speed'] . ")";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,6 +66,7 @@ foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . "
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
     </header>
@@ -94,7 +95,7 @@ foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . "
                         <option value="">-- Select Package --</option>
                         <?php foreach ($packages as $item): ?>
                             <option value="<?php echo htmlspecialchars($item['package_id']); ?>">
-                                <?php echo htmlspecialchars($item['package_name'] . " (" . $item['speed'] . ")"); ?>
+                                <?php echo htmlspecialchars($item['package_name'] . " (" . $item['download_speed'] . "/" . $item['upload_speed'] . ")"); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

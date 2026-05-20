@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_row = [
             'package_id' => $_POST['package_id'],
             'package_name' => $_POST['package_name'],
-            'speed' => $_POST['speed']
+            'download_speed' => $_POST['download_speed'],
+            'upload_speed' => $_POST['upload_speed']
         ];
         $rows[] = $new_row;
         write_csv($filename, $rows);
@@ -30,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($row['package_id'] === $old_id) {
                 $row['package_id'] = $_POST['package_id'];
                 $row['package_name'] = $_POST['package_name'];
-                $row['speed'] = $_POST['speed'];
+                $row['download_speed'] = $_POST['download_speed'];
+                $row['upload_speed'] = $_POST['upload_speed'];
             }
         }
         write_csv($filename, $rows);
@@ -65,6 +67,7 @@ if (isset($_GET['edit'])) {
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
     </header>
@@ -89,8 +92,12 @@ if (isset($_GET['edit'])) {
                     <input type="text" name="package_name" value="<?php echo $edit_item ? htmlspecialchars($edit_item['package_name']) : ''; ?>" required>
                 </div>
                 <div>
-                    <label>Speed (e.g., 100Mbps):</label>
-                    <input type="text" name="speed" value="<?php echo $edit_item ? htmlspecialchars($edit_item['speed']) : ''; ?>" required>
+                    <label>Download Speed:</label>
+                    <input type="text" name="download_speed" value="<?php echo $edit_item ? htmlspecialchars($edit_item['download_speed']) : ''; ?>" placeholder="e.g. 100Mbps" required>
+                </div>
+                <div>
+                    <label>Upload Speed:</label>
+                    <input type="text" name="upload_speed" value="<?php echo $edit_item ? htmlspecialchars($edit_item['upload_speed']) : ''; ?>" placeholder="e.g. 20Mbps" required>
                 </div>
                 <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
                 <?php if ($edit_item): ?>
@@ -106,7 +113,8 @@ if (isset($_GET['edit'])) {
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Speed</th>
+                        <th>Download</th>
+                        <th>Upload</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -115,7 +123,8 @@ if (isset($_GET['edit'])) {
                     <tr>
                         <td><?php echo htmlspecialchars($item['package_id']); ?></td>
                         <td><?php echo htmlspecialchars($item['package_name']); ?></td>
-                        <td><?php echo htmlspecialchars($item['speed']); ?></td>
+                        <td><?php echo htmlspecialchars($item['download_speed']); ?></td>
+                        <td><?php echo htmlspecialchars($item['upload_speed']); ?></td>
                         <td>
                             <a href="?edit=<?php echo urlencode($item['package_id']); ?>">Edit</a>
                             <form method="post" style="display:inline;">

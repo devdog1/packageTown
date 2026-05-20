@@ -1,0 +1,4 @@
+package_id,package_name,download_speed,upload_speed
+PKG1,Basic,50Mbps,10Mbps
+PKG2,Standard,200Mbps,50Mbps
+PKG3,Premium,1Gbps,200Mbps

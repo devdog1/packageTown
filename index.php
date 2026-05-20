@@ -15,6 +15,7 @@
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
     </header>
@@ -29,7 +30,7 @@ $mappings = read_csv('data/package_mapping.csv');
 // Create a lookup for packages
 $package_lookup = [];
 foreach ($packages as $pkg) {
-    $package_lookup[$pkg['package_id']] = $pkg['package_name'] . " (" . $pkg['speed'] . ")";
+    $package_lookup[$pkg['package_id']] = $pkg['package_name'] . " (" . $pkg['download_speed'] . " down / " . $pkg['upload_speed'] . " up)";
 }
 
 // Group mappings by node_pon_id
@@ -59,7 +60,7 @@ if (empty($nodes_pons)) {
                 }
             }
         }
-        echo "<td>" . (empty($associated) ? "None" : implode(", ", $associated)) . "</td>";
+        echo "<td>" . (empty($associated) ? "None" : "<ul><li>" . implode("</li><li>", $associated) . "</li></ul>") . "</td>";
         echo "</tr>";
     }
     echo "</tbody>";
