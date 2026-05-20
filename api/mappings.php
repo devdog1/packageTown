@@ -5,9 +5,9 @@ $type = $_GET['type'] ?? '';
 $filename = '';
 
 if ($type === 'node_profile') {
-    $filename = '../data/node_profile_mapping.csv';
+    $filename = 'node_profile_mapping.csv';
 } elseif ($type === 'profile_package') {
-    $filename = '../data/profile_package_mapping.csv';
+    $filename = 'profile_package_mapping.csv';
 } else {
     send_response(['error' => 'Invalid or missing type parameter (node_profile or profile_package)'], 400);
 }

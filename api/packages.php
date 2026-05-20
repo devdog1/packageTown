@@ -1,7 +1,7 @@
 <?php
 require_once 'router.php';
 
-$filename = '../data/speed_packages.csv';
+$filename = 'speed_packages.csv';
 $id_field = 'Current Plan';
 
 if ($method === 'GET') {

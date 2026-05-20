@@ -1,7 +1,7 @@
 <?php
 require_once 'router.php';
 
-$filename = '../data/profiles.csv';
+$filename = 'profiles.csv';
 $id_field = 'profile_id';
 
 if ($method === 'GET') {

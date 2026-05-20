@@ -1,9 +1,15 @@
 <?php
 
 function get_data_path($filename) {
-    // If it's already an absolute path or starts with 'data/', handle it
+    // Always resolve relative to the directory containing csv_helper.php (the root)
+    if (strpos($filename, '/') === false) {
+        return __DIR__ . '/data/' . $filename;
+    }
     if (strpos($filename, 'data/') === 0) {
         return __DIR__ . '/' . $filename;
+    }
+    if (strpos($filename, '../data/') === 0) {
+        return __DIR__ . '/data/' . substr($filename, 8);
     }
     return $filename;
 }

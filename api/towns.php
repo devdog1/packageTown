@@ -1,7 +1,7 @@
 <?php
 require_once 'router.php';
 
-$filename = '../data/towns_cities.csv';
+$filename = 'towns_cities.csv';
 $id_field = 'Geographic Area';
 
 if ($method === 'GET') {

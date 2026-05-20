@@ -1,7 +1,7 @@
 <?php
 require_once 'router.php';
 
-$filename = '../data/nodes_pons.csv';
+$filename = 'nodes_pons.csv';
 $id_field = 'node_pon_id';
 
 if ($method === 'GET') {
