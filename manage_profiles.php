@@ -18,6 +18,7 @@ require_once "csv_helper.php";
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="infrastructure_overview.php">Infrastructure</a></li>
                 <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>

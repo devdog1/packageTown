@@ -18,6 +18,7 @@ require_once "csv_helper.php";
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="infrastructure_overview.php">Infrastructure</a></li>
                 <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
@@ -80,6 +81,10 @@ require_once "csv_helper.php";
 
     <script>
         $(document).ready(function() {
+            // Check for city parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const cityFilter = urlParams.get('city');
+
             // Load cities for dropdown
             fetch('api/towns.php')
                 .then(res => res.json())
@@ -93,6 +98,9 @@ require_once "csv_helper.php";
                 ajax: {
                     url: 'api/nodes.php',
                     dataSrc: ''
+                },
+                search: {
+                    search: cityFilter || ''
                 },
                 columns: [
                     { data: 'city' },
