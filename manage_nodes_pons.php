@@ -1,7 +1,5 @@
 <?php
 require_once "csv_helper.php";
-
-
 $filename = 'data/nodes_pons.csv';
 $towns_file = 'data/towns_cities.csv';
 $message = '';

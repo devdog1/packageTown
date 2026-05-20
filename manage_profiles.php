@@ -1,7 +1,5 @@
 <?php
 require_once "csv_helper.php";
-
-
 $profiles_file = 'data/profiles.csv';
 $mapping_file = 'data/profile_package_mapping.csv';
 $packages_file = 'data/speed_packages.csv';

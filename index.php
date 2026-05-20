@@ -1,6 +1,7 @@
 <?php
 require_once "csv_helper.php";
 
+?>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

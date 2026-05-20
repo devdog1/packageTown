@@ -1,7 +1,5 @@
 <?php
 require_once "csv_helper.php";
-
-
 $filename = 'data/node_profile_mapping.csv';
 $message = '';
 

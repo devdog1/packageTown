@@ -1,7 +1,5 @@
 <?php
 require_once "csv_helper.php";
-
-
 $filename = 'data/speed_packages.csv';
 $message = '';
 

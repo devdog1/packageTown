@@ -19,7 +19,7 @@
     <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
-        url: "<?php require_once '../csv_helper.php'; echo get_setting('base_url', ''); ?>api/swagger.json",
+        url: "swagger.php",
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
