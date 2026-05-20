@@ -5,9 +5,14 @@ require_once '../csv_helper.php';
 header('Content-Type: application/json');
 
 function send_response($data, $status = 200) {
-    ob_end_clean();
+    if (ob_get_length()) ob_end_clean();
     http_response_code($status);
-    echo json_encode($data);
+    $json = json_encode($data);
+    if ($json === false) {
+        echo json_encode(['error' => 'JSON encoding failed: ' . json_last_error_msg()]);
+    } else {
+        echo $json;
+    }
     exit;
 }
 
