@@ -68,6 +68,9 @@ foreach ($mappings as $m) {
     <meta charset="UTF-8">
     <title>Manage Profiles</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 </head>
 <body>
     <header>
@@ -131,7 +134,7 @@ foreach ($mappings as $m) {
 
         <section>
             <h3>Existing Profiles</h3>
-            <table>
+            <table id="profilesTable" class="display">
                 <thead>
                     <tr>
                         <th>Profile Name (ID)</th>
@@ -175,5 +178,10 @@ foreach ($mappings as $m) {
             </table>
         </section>
     </main>
+    <script>
+        $(document).ready( function () {
+            $('#profilesTable').DataTable();
+        } );
+    </script>
 </body>
 </html>

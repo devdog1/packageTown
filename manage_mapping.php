@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'node_pon_id' => $_POST['node_pon_id'],
             'profile_id' => $_POST['profile_id']
         ];
-        // Prevent duplicates (though a node might only have one profile usually, I'll allow multiple for now unless specified otherwise)
         $exists = false;
         foreach ($rows as $row) {
             if ($row['node_pon_id'] === $new_row['node_pon_id'] && $row['profile_id'] === $new_row['profile_id']) {
@@ -41,7 +40,6 @@ $mappings = read_csv($filename);
 $nodes_pons = read_csv('data/nodes_pons.csv');
 $profiles = read_csv('data/profiles.csv');
 
-// Create lookups
 $node_lookup = [];
 foreach ($nodes_pons as $n) $node_lookup[$n['node_pon_id']] = $n['city'] . " - " . $n['node_pon_name'];
 
@@ -54,6 +52,9 @@ foreach ($profiles as $p) $profile_lookup[$p['profile_id']] = $p['profile_name']
     <meta charset="UTF-8">
     <title>Manage Node-Profile Mappings</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 </head>
 <body>
     <header>
@@ -105,7 +106,7 @@ foreach ($profiles as $p) $profile_lookup[$p['profile_id']] = $p['profile_name']
 
         <section>
             <h3>Existing Associations</h3>
-            <table>
+            <table id="mappingsTable" class="display">
                 <thead>
                     <tr>
                         <th>Node/PON</th>
@@ -132,5 +133,10 @@ foreach ($profiles as $p) $profile_lookup[$p['profile_id']] = $p['profile_name']
             </table>
         </section>
     </main>
+    <script>
+        $(document).ready( function () {
+            $('#mappingsTable').DataTable();
+        } );
+    </script>
 </body>
 </html>

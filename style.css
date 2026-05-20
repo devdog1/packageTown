@@ -30,8 +30,8 @@ nav ul li a {
 
 main {
     padding: 20px;
-    max-width: 1000px;
-    margin: auto;
+    max-width: 1200px;
+    margin: 20px auto;
     background: #fff;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
@@ -40,20 +40,10 @@ h2, h3 {
     color: #333;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table th, table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-table th {
-    background-color: #f8f8f8;
+/* Base table styles - DataTables will enhance these */
+table.display {
+    width: 100% !important;
+    margin: 20px 0 !important;
 }
 
 form {
@@ -69,12 +59,12 @@ form div {
 
 form label {
     display: inline-block;
-    width: 150px;
+    width: 200px;
 }
 
 form input[type="text"], form select {
     padding: 5px;
-    width: 250px;
+    width: 300px;
 }
 
 button {
@@ -95,4 +85,9 @@ button:hover {
     color: #155724;
     border: 1px solid #c3e6cb;
     margin-bottom: 20px;
+}
+
+/* Responsive adjustment for datatables */
+.dataTables_wrapper {
+    margin-top: 20px;
 }

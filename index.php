@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node and PON Management</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <style>
         .pkg-details { font-size: 0.85em; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
         .pkg-name { font-weight: bold; color: #333; }
@@ -62,7 +65,7 @@ echo "<h2>System Overview</h2>";
 if (empty($nodes_pons)) {
     echo "<p>No Nodes or PONs defined yet.</p>";
 } else {
-    echo "<table>";
+    echo "<table id='overviewTable' class='display'>";
     echo "<thead><tr><th>City</th><th>ID (Node/PON)</th><th>Name</th><th>Profiles & Packages</th></tr></thead>";
     echo "<tbody>";
     foreach ($nodes_pons as $item) {
@@ -107,5 +110,10 @@ if (empty($nodes_pons)) {
 }
 ?>
     </main>
+    <script>
+        $(document).ready( function () {
+            $('#overviewTable').DataTable();
+        } );
+    </script>
 </body>
 </html>

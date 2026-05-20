@@ -63,6 +63,9 @@ if (isset($_GET['edit'])) {
     <meta charset="UTF-8">
     <title>Manage Speed Packages</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 </head>
 <body>
     <header>
@@ -108,7 +111,7 @@ if (isset($_GET['edit'])) {
 
         <section>
             <h3>Existing Packages</h3>
-            <table style="font-size: 0.9em;">
+            <table id="packagesTable" class="display" style="font-size: 0.9em;">
                 <thead>
                     <tr>
                         <?php foreach ($fields as $f): ?>
@@ -137,5 +140,10 @@ if (isset($_GET['edit'])) {
             </table>
         </section>
     </main>
+    <script>
+        $(document).ready( function () {
+            $('#packagesTable').DataTable();
+        } );
+    </script>
 </body>
 </html>

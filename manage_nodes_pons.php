@@ -55,6 +55,9 @@ if (isset($_GET['edit'])) {
     <meta charset="UTF-8">
     <title>Manage Nodes & PONs</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 </head>
 <body>
     <header>
@@ -103,7 +106,7 @@ if (isset($_GET['edit'])) {
 
         <section>
             <h3>Existing Nodes and PONs</h3>
-            <table>
+            <table id="nodesTable" class="display">
                 <thead>
                     <tr>
                         <th>City</th>
@@ -132,5 +135,10 @@ if (isset($_GET['edit'])) {
             </table>
         </section>
     </main>
+    <script>
+        $(document).ready( function () {
+            $('#nodesTable').DataTable();
+        } );
+    </script>
 </body>
 </html>
