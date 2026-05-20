@@ -1,7 +1,7 @@
 <?php
 require_once 'csv_helper.php';
 
-$filename = 'data/package_mapping.csv';
+$filename = 'data/node_profile_mapping.csv';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -11,12 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add') {
         $new_row = [
             'node_pon_id' => $_POST['node_pon_id'],
-            'package_id' => $_POST['package_id']
+            'profile_id' => $_POST['profile_id']
         ];
-        // Prevent duplicates
+        // Prevent duplicates (though a node might only have one profile usually, I'll allow multiple for now unless specified otherwise)
         $exists = false;
         foreach ($rows as $row) {
-            if ($row['node_pon_id'] === $new_row['node_pon_id'] && $row['package_id'] === $new_row['package_id']) {
+            if ($row['node_pon_id'] === $new_row['node_pon_id'] && $row['profile_id'] === $new_row['profile_id']) {
                 $exists = true;
                 break;
             }
@@ -25,14 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rows[] = $new_row;
             write_csv($filename, $rows);
             $message = "Mapping added successfully.";
-        } else {
-            $message = "Mapping already exists.";
         }
     } elseif ($action === 'delete') {
         $node_id = $_POST['node_pon_id'];
-        $pkg_id = $_POST['package_id'];
-        $rows = array_filter($rows, function($row) use ($node_id, $pkg_id) {
-            return !($row['node_pon_id'] === $node_id && $row['package_id'] === $pkg_id);
+        $profile_id = $_POST['profile_id'];
+        $rows = array_filter($rows, function($row) use ($node_id, $profile_id) {
+            return !($row['node_pon_id'] === $node_id && $row['profile_id'] === $profile_id);
         });
         write_csv($filename, array_values($rows));
         $message = "Mapping deleted successfully.";
@@ -41,20 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $mappings = read_csv($filename);
 $nodes_pons = read_csv('data/nodes_pons.csv');
-$packages = read_csv('data/speed_packages.csv');
+$profiles = read_csv('data/profiles.csv');
 
 // Create lookups
 $node_lookup = [];
 foreach ($nodes_pons as $n) $node_lookup[$n['node_pon_id']] = $n['city'] . " - " . $n['node_pon_name'];
 
-$pkg_lookup = [];
-foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . " (" . $p['download_speed'] . "/" . $p['upload_speed'] . ")";
+$profile_lookup = [];
+foreach ($profiles as $p) $profile_lookup[$p['profile_id']] = $p['profile_name'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Mappings</title>
+    <title>Manage Node-Profile Mappings</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -65,17 +63,18 @@ foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . "
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
-                <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="manage_profiles.php">Profiles</a></li>
+                <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
     </header>
     <main>
-        <h2>Manage Package to Node/PON Mappings</h2>
+        <h2>Associate Profiles with Nodes/PONs</h2>
         <?php if ($message) echo "<p class='message'>$message</p>"; ?>
 
         <section>
-            <h3>Add New Mapping</h3>
+            <h3>Add New Association</h3>
             <form method="post">
                 <input type="hidden" name="action" value="add">
                 <div>
@@ -90,27 +89,27 @@ foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . "
                     </select>
                 </div>
                 <div>
-                    <label>Speed Package:</label>
-                    <select name="package_id" required>
-                        <option value="">-- Select Package --</option>
-                        <?php foreach ($packages as $item): ?>
-                            <option value="<?php echo htmlspecialchars($item['package_id']); ?>">
-                                <?php echo htmlspecialchars($item['package_name'] . " (" . $item['download_speed'] . "/" . $item['upload_speed'] . ")"); ?>
+                    <label>Profile:</label>
+                    <select name="profile_id" required>
+                        <option value="">-- Select Profile --</option>
+                        <?php foreach ($profiles as $item): ?>
+                            <option value="<?php echo htmlspecialchars($item['profile_id']); ?>">
+                                <?php echo htmlspecialchars($item['profile_name']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button type="submit">Add Mapping</button>
+                <button type="submit">Associate Profile</button>
             </form>
         </section>
 
         <section>
-            <h3>Existing Mappings</h3>
+            <h3>Existing Associations</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Node/PON</th>
-                        <th>Package</th>
+                        <th>Profile</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -118,12 +117,12 @@ foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . "
                     <?php foreach ($mappings as $item): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($node_lookup[$item['node_pon_id']] ?? $item['node_pon_id']); ?></td>
-                        <td><?php echo htmlspecialchars($pkg_lookup[$item['package_id']] ?? $item['package_id']); ?></td>
+                        <td><?php echo htmlspecialchars($profile_lookup[$item['profile_id']] ?? $item['profile_id']); ?></td>
                         <td>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="node_pon_id" value="<?php echo htmlspecialchars($item['node_pon_id']); ?>">
-                                <input type="hidden" name="package_id" value="<?php echo htmlspecialchars($item['package_id']); ?>">
+                                <input type="hidden" name="profile_id" value="<?php echo htmlspecialchars($item['profile_id']); ?>">
                                 <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
                             </form>
                         </td>

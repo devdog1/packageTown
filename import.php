@@ -29,14 +29,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             switch ($target_type) {
                 case 'nodes_pons': $target_file = 'data/nodes_pons.csv'; break;
                 case 'packages': $target_file = 'data/speed_packages.csv'; break;
-                case 'mappings': $target_file = 'data/package_mapping.csv'; break;
+                case 'profiles': $target_file = 'data/profiles.csv'; break;
+                case 'profile_packages': $target_file = 'data/profile_package_mapping.csv'; break;
+                case 'node_profiles': $target_file = 'data/node_profile_mapping.csv'; break;
             }
 
             if ($target_file) {
                 if (isset($_POST['append']) && $_POST['append'] == '1') {
                     $existingData = read_csv($target_file);
                     $combinedData = array_merge($existingData, $newData);
-                    // Optional: remove duplicates if needed
                     write_csv($target_file, $combinedData);
                 } else {
                     write_csv($target_file, $newData);
@@ -66,7 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <li><a href="index.php">Dashboard</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
-                <li><a href="manage_mapping.php">Package Mappings</a></li>
+                <li><a href="manage_profiles.php">Profiles</a></li>
+                <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
             </ul>
         </nav>
@@ -84,7 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                     <select name="type" required>
                         <option value="nodes_pons">Nodes & PONs</option>
                         <option value="packages">Speed Packages</option>
-                        <option value="mappings">Package Mappings</option>
+                        <option value="profiles">Profiles</option>
+                        <option value="profile_packages">Packages to Profile Mapping</option>
+                        <option value="node_profiles">Profile to Node Mapping</option>
                     </select>
                 </div>
                 <div>
@@ -105,7 +109,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             <ul>
                 <li><a href="templates/nodes_pons_template.csv" download>Nodes & PONs Template</a></li>
                 <li><a href="templates/speed_packages_template.csv" download>Speed Packages Template</a></li>
-                <li><a href="templates/package_mapping_template.csv" download>Package Mappings Template</a></li>
+                <li><a href="templates/profiles_template.csv" download>Profiles Template</a></li>
+                <li><a href="templates/profile_package_mapping_template.csv" download>Packages to Profile Template</a></li>
+                <li><a href="templates/node_profile_mapping_template.csv" download>Profile to Node Template</a></li>
             </ul>
         </section>
     </main>
