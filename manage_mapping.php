@@ -35,8 +35,10 @@ require_once "csv_helper.php";
         <div id="message" class="message" style="display:none;"></div>
 
         <section>
-            <h3>Assign Profile to Node/PON</h3>
+            <h3 id="formTitle">Assign Profile to Node/PON</h3>
             <form id="mappingForm">
+                <input type="hidden" id="oldNode">
+                <input type="hidden" id="oldProfile">
                 <div>
                     <label>Node/PON:</label>
                     <select id="nodeSelect" required></select>
@@ -45,7 +47,8 @@ require_once "csv_helper.php";
                     <label>Profile:</label>
                     <select id="profileSelect" required></select>
                 </div>
-                <button type="submit">Assign Mapping</button>
+                <button type="submit" id="submitBtn">Assign Mapping</button>
+                <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
             </form>
         </section>
 
@@ -94,7 +97,10 @@ require_once "csv_helper.php";
                     {
                         data: null,
                         render: function(data, type, row) {
-                            return `<button class="delete-btn" data-node="${row.node_pon_id}" data-profile="${row.profile_id}">Remove Mapping</button>`;
+                            return `
+                                <button class="edit-btn" data-node="${row.node_pon_id}" data-profile="${row.profile_id}">Edit</button>
+                                <button class="delete-btn" data-node="${row.node_pon_id}" data-profile="${row.profile_id}">Remove Mapping</button>
+                            `;
                         }
                     }
                 ]
@@ -107,22 +113,59 @@ require_once "csv_helper.php";
 
             $('#mappingForm').on('submit', function(e) {
                 e.preventDefault();
+                const oldNode = $('#oldNode').val();
+                const oldProfile = $('#oldProfile').val();
+
                 const data = {
                     'node_pon_id': $('#nodeSelect').val(),
                     'profile_id': $('#profileSelect').val()
                 };
 
-                fetch('api/mappings.php?type=node_profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                })
-                .then(res => res.json())
-                .then(() => {
-                    showMessage('Mapping assigned successfully');
-                    table.ajax.reload();
-                })
-                .catch(err => showMessage(err.message, true));
+                if (oldNode && oldProfile) {
+                    // Update
+                    fetch('api/mappings.php?type=node_profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            old: { node_pon_id: oldNode, profile_id: oldProfile },
+                            new: data
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.error) throw new Error(res.error);
+                        showMessage('Mapping updated successfully');
+                        resetForm();
+                        table.ajax.reload();
+                    })
+                    .catch(err => showMessage(err.message, true));
+                } else {
+                    // Create
+                    fetch('api/mappings.php?type=node_profile', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    })
+                    .then(res => res.json())
+                    .then(() => {
+                        showMessage('Mapping assigned successfully');
+                        resetForm();
+                        table.ajax.reload();
+                    })
+                    .catch(err => showMessage(err.message, true));
+                }
+            });
+
+            $('#mappingsTable').on('click', '.edit-btn', function() {
+                const node = $(this).data('node');
+                const profile = $(this).data('profile');
+                $('#oldNode').val(node);
+                $('#oldProfile').val(profile);
+                $('#nodeSelect').val(node);
+                $('#profileSelect').val(profile);
+                $('#formTitle').text('Edit Node-Profile Mapping');
+                $('#submitBtn').text('Update Mapping');
+                $('#cancelBtn').show();
             });
 
             $('#mappingsTable').on('click', '.delete-btn', function() {
@@ -143,6 +186,17 @@ require_once "csv_helper.php";
                 })
                 .catch(err => showMessage(err.message, true));
             });
+
+            $('#cancelBtn').on('click', resetForm);
+
+            function resetForm() {
+                $('#mappingForm')[0].reset();
+                $('#oldNode').val('');
+                $('#oldProfile').val('');
+                $('#formTitle').text('Assign Profile to Node/PON');
+                $('#submitBtn').text('Assign Mapping');
+                $('#cancelBtn').hide();
+            }
         });
     </script>
 </body>

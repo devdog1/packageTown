@@ -25,6 +25,32 @@ if ($method === 'POST') {
     send_response($input, 201);
 }
 
+if ($method === 'PUT') {
+    $input = get_json_input();
+    if (!isset($input['old']) || !isset($input['new'])) {
+        send_response(['error' => 'Missing old or new mapping data'], 400);
+    }
+    $rows = read_csv($filename);
+    $found = false;
+    foreach ($rows as &$row) {
+        $match = true;
+        foreach ($input['old'] as $key => $value) {
+            if (!isset($row[$key]) || $row[$key] !== $value) {
+                $match = false;
+                break;
+            }
+        }
+        if ($match) {
+            $row = array_merge($row, $input['new']);
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) send_response(['error' => 'Mapping not found'], 404);
+    write_csv($filename, $rows);
+    send_response(['status' => 'success']);
+}
+
 if ($method === 'DELETE') {
     $input = get_json_input();
     $rows = read_csv($filename);
