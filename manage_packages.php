@@ -1,60 +1,6 @@
 <?php
 require_once "csv_helper.php";
-$filename = 'data/speed_packages.csv';
-$message = '';
 
-$fields = [
-    'State',
-    'Current Plan',
-    'CSG CODE',
-    'Download Speed',
-    'Upload Speed',
-    'Provisioning System Name'
-];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $rows = read_csv($filename);
-
-    if ($action === 'add') {
-        $new_row = [];
-        foreach ($fields as $f) {
-            $new_row[$f] = $_POST[str_replace(' ', '_', $f)];
-        }
-        $rows[] = $new_row;
-        write_csv($filename, $rows);
-        $message = "Package added successfully.";
-    } elseif ($action === 'delete') {
-        $plan_to_delete = $_POST['current_plan'];
-        $rows = array_filter($rows, function($row) use ($plan_to_delete) {
-            return $row['Current Plan'] !== $plan_to_delete;
-        });
-        write_csv($filename, array_values($rows));
-        $message = "Package deleted successfully.";
-    } elseif ($action === 'update') {
-        $old_plan = $_POST['old_current_plan'];
-        foreach ($rows as &$row) {
-            if ($row['Current Plan'] === $old_plan) {
-                foreach ($fields as $f) {
-                    $row[$f] = $_POST[str_replace(' ', '_', $f)];
-                }
-            }
-        }
-        write_csv($filename, $rows);
-        $message = "Package updated successfully.";
-    }
-}
-
-$packages = read_csv($filename);
-$edit_item = null;
-if (isset($_GET['edit'])) {
-    foreach ($packages as $item) {
-        if ($item['Current Plan'] === $_GET['edit']) {
-            $edit_item = $item;
-            break;
-        }
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,6 +18,7 @@ if (isset($_GET['edit'])) {
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_profiles.php">Profiles</a></li>
@@ -84,67 +31,158 @@ if (isset($_GET['edit'])) {
     </header>
     <main>
         <h2>Manage Internet Speed Packages</h2>
-        <?php if ($message) echo "<p class='message'>$message</p>"; ?>
+        <div id="message" class="message" style="display:none;"></div>
 
         <section>
-            <h3><?php echo $edit_item ? 'Edit' : 'Add New'; ?> Package</h3>
-            <form method="post">
-                <input type="hidden" name="action" value="<?php echo $edit_item ? 'update' : 'add'; ?>">
-                <?php if ($edit_item): ?>
-                    <input type="hidden" name="old_current_plan" value="<?php echo htmlspecialchars($edit_item['Current Plan']); ?>">
-                <?php endif; ?>
-
-                <?php foreach ($fields as $f):
-                    $id = str_replace(' ', '_', $f);
-                ?>
+            <h3 id="formTitle">Add New Speed Package</h3>
+            <form id="packageForm">
+                <input type="hidden" id="oldId" name="oldId">
                 <div>
-                    <label><?php echo htmlspecialchars($f); ?>:</label>
-                    <input type="text" name="<?php echo $id; ?>" value="<?php echo $edit_item ? htmlspecialchars($edit_item[$f]) : ''; ?>" required>
+                    <label>State:</label>
+                    <input type="text" id="state">
                 </div>
-                <?php endforeach; ?>
-
-                <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
-                <?php if ($edit_item): ?>
-                    <a href="manage_packages.php">Cancel</a>
-                <?php endif; ?>
+                <div>
+                    <label>Current Plan Name:</label>
+                    <input type="text" id="planName" required>
+                </div>
+                <div>
+                    <label>CSG CODE(s):</label>
+                    <input type="text" id="csgCode">
+                </div>
+                <div>
+                    <label>Download Speed:</label>
+                    <input type="text" id="downloadSpeed">
+                </div>
+                <div>
+                    <label>Upload Speed:</label>
+                    <input type="text" id="uploadSpeed">
+                </div>
+                <div>
+                    <label>Provisioning System Name:</label>
+                    <input type="text" id="systemName">
+                </div>
+                <button type="submit" id="submitBtn">Add</button>
+                <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
             </form>
         </section>
 
         <section>
-            <h3>Existing Packages</h3>
-            <table id="packagesTable" class="display" style="font-size: 0.9em;">
+            <h3>Existing Speed Packages</h3>
+            <table id="packagesTable" class="display">
                 <thead>
                     <tr>
-                        <?php foreach ($fields as $f): ?>
-                            <th><?php echo htmlspecialchars($f); ?></th>
-                        <?php endforeach; ?>
+                        <th>State</th>
+                        <th>Current Plan</th>
+                        <th>CSG CODE</th>
+                        <th>Download</th>
+                        <th>Upload</th>
+                        <th>System Name</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php foreach ($packages as $item): ?>
-                    <tr>
-                        <?php foreach ($fields as $f): ?>
-                            <td><?php echo htmlspecialchars($item[$f]); ?></td>
-                        <?php endforeach; ?>
-                        <td>
-                            <a href="?edit=<?php echo urlencode($item['Current Plan']); ?>">Edit</a>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="current_plan" value="<?php echo htmlspecialchars($item['Current Plan']); ?>">
-                                <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
     </main>
+
     <script>
-        $(document).ready( function () {
-            $('#packagesTable').DataTable();
-        } );
+        $(document).ready(function() {
+            const table = $('#packagesTable').DataTable({
+                ajax: {
+                    url: 'api/packages.php',
+                    dataSrc: ''
+                },
+                columns: [
+                    { data: 'State' },
+                    { data: 'Current Plan' },
+                    { data: 'CSG CODE' },
+                    { data: 'Download Speed' },
+                    { data: 'Upload Speed' },
+                    { data: 'Provisioning System Name' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <button class="edit-btn" data-id="${row['Current Plan']}">Edit</button>
+                                <button class="delete-btn" data-id="${row['Current Plan']}">Delete</button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            function showMessage(msg, isError = false) {
+                $('#message').text(msg).css('background', isError ? '#f8d7da' : '#d4edda').show();
+                setTimeout(() => $('#message').hide(), 3000);
+            }
+
+            $('#packageForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#oldId').val();
+                const data = {
+                    'State': $('#state').val(),
+                    'Current Plan': $('#planName').val(),
+                    'CSG CODE': $('#csgCode').val(),
+                    'Download Speed': $('#downloadSpeed').val(),
+                    'Upload Speed': $('#uploadSpeed').val(),
+                    'Provisioning System Name': $('#systemName').val()
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `api/packages.php?id=${encodeURIComponent(id)}` : 'api/packages.php';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage(id ? 'Updated successfully' : 'Added successfully');
+                    resetForm();
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#packagesTable').on('click', '.edit-btn', function() {
+                const data = table.row($(this).parents('tr')).data();
+                $('#oldId').val(data['Current Plan']);
+                $('#state').val(data['State']);
+                $('#planName').val(data['Current Plan']);
+                $('#csgCode').val(data['CSG CODE']);
+                $('#downloadSpeed').val(data['Download Speed']);
+                $('#uploadSpeed').val(data['Upload Speed']);
+                $('#systemName').val(data['Provisioning System Name']);
+                $('#formTitle').text('Edit Speed Package');
+                $('#submitBtn').text('Update');
+                $('#cancelBtn').show();
+            });
+
+            $('#packagesTable').on('click', '.delete-btn', function() {
+                if (!confirm('Are you sure?')) return;
+                const id = $(this).data('id');
+                fetch(`api/packages.php?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage('Deleted successfully');
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#cancelBtn').on('click', resetForm);
+
+            function resetForm() {
+                $('#packageForm')[0].reset();
+                $('#oldId').val('');
+                $('#formTitle').text('Add New Speed Package');
+                $('#submitBtn').text('Add');
+                $('#cancelBtn').hide();
+            }
+        });
     </script>
 </body>
 </html>

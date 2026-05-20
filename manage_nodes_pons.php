@@ -1,57 +1,6 @@
 <?php
 require_once "csv_helper.php";
-$filename = 'data/nodes_pons.csv';
-$towns_file = 'data/towns_cities.csv';
-$message = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $rows = read_csv($filename);
-
-    if ($action === 'add') {
-        $new_row = [
-            'city' => $_POST['city'],
-            'node_pon_id' => $_POST['node_pon_id'],
-            'node_pon_name' => $_POST['node_pon_name'],
-            'type' => $_POST['type']
-        ];
-        $rows[] = $new_row;
-        write_csv($filename, $rows);
-        $message = "Node/PON added successfully.";
-    } elseif ($action === 'delete') {
-        $id_to_delete = $_POST['node_pon_id'];
-        $rows = array_filter($rows, function($row) use ($id_to_delete) {
-            return $row['node_pon_id'] !== $id_to_delete;
-        });
-        write_csv($filename, array_values($rows));
-        $message = "Node/PON deleted successfully.";
-    } elseif ($action === 'update') {
-        $old_id = $_POST['old_node_pon_id'];
-        foreach ($rows as &$row) {
-            if ($row['node_pon_id'] === $old_id) {
-                $row['city'] = $_POST['city'];
-                $row['node_pon_id'] = $_POST['node_pon_id'];
-                $row['node_pon_name'] = $_POST['node_pon_name'];
-                $row['type'] = $_POST['type'];
-            }
-        }
-        write_csv($filename, $rows);
-        $message = "Node/PON updated successfully.";
-    }
-}
-
-$nodes_pons = read_csv($filename);
-$towns = read_csv($towns_file);
-
-$edit_item = null;
-if (isset($_GET['edit'])) {
-    foreach ($nodes_pons as $item) {
-        if ($item['node_pon_id'] === $_GET['edit']) {
-            $edit_item = $item;
-            break;
-        }
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,46 +31,33 @@ if (isset($_GET['edit'])) {
     </header>
     <main>
         <h2>Manage Nodes and PONs</h2>
-        <?php if ($message) echo "<p class='message'>$message</p>"; ?>
+        <div id="message" class="message" style="display:none;"></div>
 
         <section>
-            <h3><?php echo $edit_item ? 'Edit' : 'Add New'; ?> Node/PON</h3>
-            <form method="post">
-                <input type="hidden" name="action" value="<?php echo $edit_item ? 'update' : 'add'; ?>">
-                <?php if ($edit_item): ?>
-                    <input type="hidden" name="old_node_pon_id" value="<?php echo htmlspecialchars($edit_item['node_pon_id']); ?>">
-                <?php endif; ?>
-
+            <h3 id="formTitle">Add New Node/PON</h3>
+            <form id="nodeForm">
+                <input type="hidden" id="oldId" name="oldId">
                 <div>
-                    <label>City (Geographic Area):</label>
-                    <select name="city" required>
-                        <option value="">-- Select City --</option>
-                        <?php foreach ($towns as $town): ?>
-                            <option value="<?php echo htmlspecialchars($town['Geographic Area']); ?>" <?php echo ($edit_item && $edit_item['city'] == $town['Geographic Area']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($town['Geographic Area']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label>City:</label>
+                    <select id="city" required></select>
                 </div>
                 <div>
                     <label>Node/PON ID:</label>
-                    <input type="text" name="node_pon_id" value="<?php echo $edit_item ? htmlspecialchars($edit_item['node_pon_id']) : ''; ?>" required>
+                    <input type="text" id="nodeId" required>
                 </div>
                 <div>
                     <label>Node/PON Name:</label>
-                    <input type="text" name="node_pon_name" value="<?php echo $edit_item ? htmlspecialchars($edit_item['node_pon_name']) : ''; ?>" required>
+                    <input type="text" id="nodeName" required>
                 </div>
                 <div>
                     <label>Type:</label>
-                    <select name="type" required>
-                        <option value="docsis" <?php echo ($edit_item && $edit_item['type'] == 'docsis') ? 'selected' : ''; ?>>Docsis (Node)</option>
-                        <option value="fiber" <?php echo ($edit_item && $edit_item['type'] == 'fiber') ? 'selected' : ''; ?>>Fiber (PON)</option>
+                    <select id="type" required>
+                        <option value="docsis">Docsis</option>
+                        <option value="fiber">Fiber</option>
                     </select>
                 </div>
-                <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
-                <?php if ($edit_item): ?>
-                    <a href="manage_nodes_pons.php">Cancel</a>
-                <?php endif; ?>
+                <button type="submit" id="submitBtn">Add</button>
+                <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
             </form>
         </section>
 
@@ -137,31 +73,112 @@ if (isset($_GET['edit'])) {
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php foreach ($nodes_pons as $item): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($item['city']); ?></td>
-                        <td><?php echo htmlspecialchars($item['node_pon_id']); ?></td>
-                        <td><?php echo htmlspecialchars($item['node_pon_name']); ?></td>
-                        <td><?php echo ucfirst(htmlspecialchars($item['type'])); ?></td>
-                        <td>
-                            <a href="?edit=<?php echo urlencode($item['node_pon_id']); ?>">Edit</a>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="node_pon_id" value="<?php echo htmlspecialchars($item['node_pon_id']); ?>">
-                                <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
     </main>
+
     <script>
-        $(document).ready( function () {
-            $('#nodesTable').DataTable();
-        } );
+        $(document).ready(function() {
+            // Load cities for dropdown
+            fetch('api/towns.php')
+                .then(res => res.json())
+                .then(towns => {
+                    towns.forEach(t => {
+                        $('#city').append($('<option>', { value: t['Geographic Area'], text: t['Geographic Area'] }));
+                    });
+                });
+
+            const table = $('#nodesTable').DataTable({
+                ajax: {
+                    url: 'api/nodes.php',
+                    dataSrc: ''
+                },
+                columns: [
+                    { data: 'city' },
+                    { data: 'node_pon_id' },
+                    { data: 'node_pon_name' },
+                    { data: 'type' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <button class="edit-btn" data-id="${row['node_pon_id']}">Edit</button>
+                                <button class="delete-btn" data-id="${row['node_pon_id']}">Delete</button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            function showMessage(msg, isError = false) {
+                $('#message').text(msg).css('background', isError ? '#f8d7da' : '#d4edda').show();
+                setTimeout(() => $('#message').hide(), 3000);
+            }
+
+            $('#nodeForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#oldId').val();
+                const data = {
+                    'city': $('#city').val(),
+                    'node_pon_id': $('#nodeId').val(),
+                    'node_pon_name': $('#nodeName').val(),
+                    'type': $('#type').val()
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `api/nodes.php?id=${encodeURIComponent(id)}` : 'api/nodes.php';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage(id ? 'Updated successfully' : 'Added successfully');
+                    resetForm();
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#nodesTable').on('click', '.edit-btn', function() {
+                const data = table.row($(this).parents('tr')).data();
+                $('#oldId').val(data['node_pon_id']);
+                $('#city').val(data['city']);
+                $('#nodeId').val(data['node_pon_id']);
+                $('#nodeName').val(data['node_pon_name']);
+                $('#type').val(data['type']);
+                $('#formTitle').text('Edit Node/PON');
+                $('#submitBtn').text('Update');
+                $('#cancelBtn').show();
+            });
+
+            $('#nodesTable').on('click', '.delete-btn', function() {
+                if (!confirm('Are you sure?')) return;
+                const id = $(this).data('id');
+                fetch(`api/nodes.php?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage('Deleted successfully');
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#cancelBtn').on('click', resetForm);
+
+            function resetForm() {
+                $('#nodeForm')[0].reset();
+                $('#oldId').val('');
+                $('#formTitle').text('Add New Node/PON');
+                $('#submitBtn').text('Add');
+                $('#cancelBtn').hide();
+            }
+        });
     </script>
 </body>
 </html>

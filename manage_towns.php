@@ -1,53 +1,6 @@
 <?php
 require_once "csv_helper.php";
-$filename = 'data/towns_cities.csv';
-$message = '';
 
-$fields = ['Geographic Area', '2LA', '3LA', 'CLLI', 'Location'];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    $rows = read_csv($filename);
-
-    if ($action === 'add') {
-        $new_row = [];
-        foreach ($fields as $f) {
-            $new_row[$f] = $_POST[str_replace(' ', '_', $f)];
-        }
-        $rows[] = $new_row;
-        write_csv($filename, $rows);
-        $message = "Town/City added successfully.";
-    } elseif ($action === 'delete') {
-        $name = $_POST['geographic_area'];
-        $rows = array_filter($rows, function($row) use ($name) {
-            return $row['Geographic Area'] !== $name;
-        });
-        write_csv($filename, array_values($rows));
-        $message = "Town/City deleted successfully.";
-    } elseif ($action === 'update') {
-        $old_name = $_POST['old_geographic_area'];
-        foreach ($rows as &$row) {
-            if ($row['Geographic Area'] === $old_name) {
-                foreach ($fields as $f) {
-                    $row[$f] = $_POST[str_replace(' ', '_', $f)];
-                }
-            }
-        }
-        write_csv($filename, $rows);
-        $message = "Town/City updated successfully.";
-    }
-}
-
-$towns = read_csv($filename);
-$edit_item = null;
-if (isset($_GET['edit'])) {
-    foreach ($towns as $item) {
-        if ($item['Geographic Area'] === $_GET['edit']) {
-            $edit_item = $item;
-            break;
-        }
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,29 +31,34 @@ if (isset($_GET['edit'])) {
     </header>
     <main>
         <h2>Manage Towns and Cities</h2>
-        <?php if ($message) echo "<p class='message'>$message</p>"; ?>
+        <div id="message" class="message" style="display:none;"></div>
 
         <section>
-            <h3><?php echo $edit_item ? 'Edit' : 'Add New'; ?> Town/City</h3>
-            <form method="post">
-                <input type="hidden" name="action" value="<?php echo $edit_item ? 'update' : 'add'; ?>">
-                <?php if ($edit_item): ?>
-                    <input type="hidden" name="old_geographic_area" value="<?php echo htmlspecialchars($edit_item['Geographic Area']); ?>">
-                <?php endif; ?>
-
-                <?php foreach ($fields as $f):
-                    $id = str_replace(' ', '_', $f);
-                ?>
+            <h3 id="formTitle">Add New Town/City</h3>
+            <form id="townForm">
+                <input type="hidden" id="oldId" name="oldId">
                 <div>
-                    <label><?php echo htmlspecialchars($f); ?>:</label>
-                    <input type="text" name="<?php echo $id; ?>" value="<?php echo $edit_item ? htmlspecialchars($edit_item[$f]) : ''; ?>" <?php echo ($f === 'Geographic Area') ? 'required' : ''; ?>>
+                    <label>Geographic Area:</label>
+                    <input type="text" id="geographicArea" required>
                 </div>
-                <?php endforeach; ?>
-
-                <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
-                <?php if ($edit_item): ?>
-                    <a href="manage_towns.php">Cancel</a>
-                <?php endif; ?>
+                <div>
+                    <label>2LA:</label>
+                    <input type="text" id="la2">
+                </div>
+                <div>
+                    <label>3LA:</label>
+                    <input type="text" id="la3">
+                </div>
+                <div>
+                    <label>CLLI:</label>
+                    <input type="text" id="clli">
+                </div>
+                <div>
+                    <label>Location (URL):</label>
+                    <input type="text" id="location">
+                </div>
+                <button type="submit" id="submitBtn">Add</button>
+                <button type="button" id="cancelBtn" style="display:none;">Cancel</button>
             </form>
         </section>
 
@@ -109,42 +67,119 @@ if (isset($_GET['edit'])) {
             <table id="townsTable" class="display">
                 <thead>
                     <tr>
-                        <?php foreach ($fields as $f): ?>
-                            <th><?php echo htmlspecialchars($f); ?></th>
-                        <?php endforeach; ?>
+                        <th>Geographic Area</th>
+                        <th>2LA</th>
+                        <th>3LA</th>
+                        <th>CLLI</th>
+                        <th>Location</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php foreach ($towns as $item): ?>
-                    <tr>
-                        <?php foreach ($fields as $f): ?>
-                            <td>
-                                <?php if ($f === 'Location' && !empty($item[$f])): ?>
-                                    <a href="<?php echo htmlspecialchars($item[$f]); ?>" target="_blank">View Map</a>
-                                <?php else: ?>
-                                    <?php echo htmlspecialchars($item[$f]); ?>
-                                <?php endif; ?>
-                            </td>
-                        <?php endforeach; ?>
-                        <td>
-                            <a href="?edit=<?php echo urlencode($item['Geographic Area']); ?>">Edit</a>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="geographic_area" value="<?php echo htmlspecialchars($item['Geographic Area']); ?>">
-                                <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
+                <tbody></tbody>
             </table>
         </section>
     </main>
+
     <script>
-        $(document).ready( function () {
-            $('#townsTable').DataTable();
-        } );
+        $(document).ready(function() {
+            const table = $('#townsTable').DataTable({
+                ajax: {
+                    url: 'api/towns.php',
+                    dataSrc: ''
+                },
+                columns: [
+                    { data: 'Geographic Area' },
+                    { data: '2LA' },
+                    { data: '3LA' },
+                    { data: 'CLLI' },
+                    {
+                        data: 'Location',
+                        render: function(data) {
+                            return data ? `<a href="${data}" target="_blank">View Map</a>` : '';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `
+                                <button class="edit-btn" data-id="${row['Geographic Area']}">Edit</button>
+                                <button class="delete-btn" data-id="${row['Geographic Area']}">Delete</button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            function showMessage(msg, isError = false) {
+                $('#message').text(msg).css('background', isError ? '#f8d7da' : '#d4edda').show();
+                setTimeout(() => $('#message').hide(), 3000);
+            }
+
+            $('#townForm').on('submit', function(e) {
+                e.preventDefault();
+                const id = $('#oldId').val();
+                const data = {
+                    'Geographic Area': $('#geographicArea').val(),
+                    '2LA': $('#la2').val(),
+                    '3LA': $('#la3').val(),
+                    'CLLI': $('#clli').val(),
+                    'Location': $('#location').val()
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `api/towns.php?id=${encodeURIComponent(id)}` : 'api/towns.php';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage(id ? 'Updated successfully' : 'Added successfully');
+                    resetForm();
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#townsTable').on('click', '.edit-btn', function() {
+                const data = table.row($(this).parents('tr')).data();
+                $('#oldId').val(data['Geographic Area']);
+                $('#geographicArea').val(data['Geographic Area']);
+                $('#la2').val(data['2LA']);
+                $('#la3').val(data['3LA']);
+                $('#clli').val(data['CLLI']);
+                $('#location').val(data['Location']);
+                $('#formTitle').text('Edit Town/City');
+                $('#submitBtn').text('Update');
+                $('#cancelBtn').show();
+            });
+
+            $('#townsTable').on('click', '.delete-btn', function() {
+                if (!confirm('Are you sure?')) return;
+                const id = $(this).data('id');
+                fetch(`api/towns.php?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) throw new Error(res.error);
+                    showMessage('Deleted successfully');
+                    table.ajax.reload();
+                })
+                .catch(err => showMessage(err.message, true));
+            });
+
+            $('#cancelBtn').on('click', resetForm);
+
+            function resetForm() {
+                $('#townForm')[0].reset();
+                $('#oldId').val('');
+                $('#formTitle').text('Add New Town/City');
+                $('#submitBtn').text('Add');
+                $('#cancelBtn').hide();
+            }
+        });
     </script>
 </body>
 </html>
