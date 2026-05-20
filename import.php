@@ -1,5 +1,6 @@
 <?php
-require_once 'csv_helper.php';
+require_once "csv_helper.php";
+
 
 $message = '';
 $error = '';
@@ -96,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 </head>
 <body>
     <header>
-        <h1>Network Infrastructure Management</h1>
+        <h1><?php echo htmlspecialchars(get_setting("site_name", "Network Infrastructure Management")); ?></h1>
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
@@ -107,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
                 <li><a href="api/docs.php" target="_blank">REST API</a></li>
+                <li><a href="manage_settings.php">Settings</a></li>
             </ul>
         </nav>
     </header>

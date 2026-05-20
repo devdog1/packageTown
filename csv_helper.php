@@ -1,6 +1,15 @@
 <?php
 
+function get_data_path($filename) {
+    // If it's already an absolute path or starts with 'data/', handle it
+    if (strpos($filename, 'data/') === 0) {
+        return __DIR__ . '/' . $filename;
+    }
+    return $filename;
+}
+
 function read_csv($filename) {
+    $filename = get_data_path($filename);
     ensure_csv_exists($filename);
     $rows = [];
     if (($handle = fopen($filename, "r")) !== FALSE) {
@@ -20,6 +29,7 @@ function read_csv($filename) {
 }
 
 function write_csv($filename, $rows) {
+    $filename = get_data_path($filename);
     if (empty($rows)) {
         $headers = get_csv_headers($filename);
         if (($handle = fopen($filename, "w")) !== FALSE) {
@@ -39,6 +49,7 @@ function write_csv($filename, $rows) {
 }
 
 function get_csv_headers($filename) {
+    $filename = get_data_path($filename);
     if (!file_exists($filename)) {
         return get_default_headers($filename);
     }
@@ -79,9 +90,37 @@ function get_default_headers($filename) {
             return ['profile_id', 'package_id'];
         case 'node_profile_mapping.csv':
             return ['node_pon_id', 'profile_id'];
+        case 'settings.csv':
+            return ['setting_key', 'setting_value'];
         default:
             return [];
     }
+}
+
+function get_setting($key, $default = '') {
+    $settings = read_csv('data/settings.csv');
+    foreach ($settings as $s) {
+        if ($s['setting_key'] === $key) {
+            return $s['setting_value'];
+        }
+    }
+    return $default;
+}
+
+function update_setting($key, $value) {
+    $settings = read_csv('data/settings.csv');
+    $found = false;
+    foreach ($settings as &$s) {
+        if ($s['setting_key'] === $key) {
+            $s['setting_value'] = $value;
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
+        $settings[] = ['setting_key' => $key, 'setting_value' => $value];
+    }
+    write_csv('data/settings.csv', $settings);
 }
 
 function generate_id($rows, $id_key) {

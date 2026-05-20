@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?php
+require_once "csv_helper.php";
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -50,7 +52,7 @@
 </head>
 <body>
     <header>
-        <h1>Network Infrastructure Management</h1>
+        <h1><?php echo htmlspecialchars(get_setting("site_name", "Network Infrastructure Management")); ?></h1>
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
@@ -61,12 +63,12 @@
                 <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
                 <li><a href="api/docs.php" target="_blank">REST API</a></li>
+                <li><a href="manage_settings.php">Settings</a></li>
             </ul>
         </nav>
     </header>
     <main>
 <?php
-require_once 'csv_helper.php';
 
 function speed_to_mbps($speed_str) {
     $speed_str = strtolower(trim($speed_str));

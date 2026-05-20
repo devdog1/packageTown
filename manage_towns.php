@@ -1,5 +1,6 @@
 <?php
-require_once 'csv_helper.php';
+require_once "csv_helper.php";
+
 
 $filename = 'data/towns_cities.csv';
 $message = '';
@@ -62,7 +63,7 @@ if (isset($_GET['edit'])) {
 </head>
 <body>
     <header>
-        <h1>Network Infrastructure Management</h1>
+        <h1><?php echo htmlspecialchars(get_setting("site_name", "Network Infrastructure Management")); ?></h1>
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
@@ -73,6 +74,7 @@ if (isset($_GET['edit'])) {
                 <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
                 <li><a href="api/docs.php" target="_blank">REST API</a></li>
+                <li><a href="manage_settings.php">Settings</a></li>
             </ul>
         </nav>
     </header>

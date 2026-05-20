@@ -1,13 +1,4 @@
-[Wed May 20 18:10:49 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
-[Wed May 20 18:10:56 2026] [::1]:56742 Accepted
-[Wed May 20 18:10:56 2026] [::1]:56742 [200]: GET /api/docs.php
-[Wed May 20 18:10:56 2026] [::1]:56742 Closing
-[Wed May 20 18:10:57 2026] [::1]:56758 Accepted
-[Wed May 20 18:10:57 2026] [::1]:56758 [200]: GET /api/swagger.json
-[Wed May 20 18:10:57 2026] [::1]:56758 Closing
-[Wed May 20 18:10:58 2026] [::1]:56770 Accepted
-[Wed May 20 18:10:58 2026] [::1]:56770 [200]: GET /index.php
-[Wed May 20 18:10:58 2026] [::1]:56770 Closing
-[Wed May 20 18:10:58 2026] [::1]:56776 Accepted
-[Wed May 20 18:10:58 2026] [::1]:56776 [200]: GET /style.css
-[Wed May 20 18:10:58 2026] [::1]:56776 Closing
+[Wed May 20 18:28:26 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Wed May 20 18:28:28 2026] [::1]:51340 Accepted
+[Wed May 20 18:28:28 2026] [::1]:51340 [200]: GET /api/towns.php
+[Wed May 20 18:28:28 2026] [::1]:51340 Closing
