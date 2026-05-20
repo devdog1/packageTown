@@ -26,8 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 
         if (!empty($newData)) {
             $target_file = '';
+            $handle_special_nodes = false;
             switch ($target_type) {
-                case 'nodes_pons': $target_file = 'data/nodes_pons.csv'; break;
+                case 'nodes_pons':
+                    $target_file = 'data/nodes_pons.csv';
+                    $handle_special_nodes = true;
+                    break;
                 case 'packages': $target_file = 'data/speed_packages.csv'; break;
                 case 'profiles': $target_file = 'data/profiles.csv'; break;
                 case 'profile_packages': $target_file = 'data/profile_package_mapping.csv'; break;
@@ -35,14 +39,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             }
 
             if ($target_file) {
-                if (isset($_POST['append']) && $_POST['append'] == '1') {
-                    $existingData = read_csv($target_file);
-                    $combinedData = array_merge($existingData, $newData);
-                    write_csv($target_file, $combinedData);
+                $append = (isset($_POST['append']) && $_POST['append'] == '1');
+
+                if ($handle_special_nodes) {
+                    // Filter out profile_id from the nodes_pons data and handle it separately
+                    $nodesOnly = [];
+                    $nodeProfileMappings = [];
+                    foreach ($newData as $row) {
+                        $profileId = $row['profile_id'] ?? null;
+                        unset($row['profile_id']);
+                        $nodesOnly[] = $row;
+                        if ($profileId) {
+                            $nodeProfileMappings[] = [
+                                'node_pon_id' => $row['node_pon_id'],
+                                'profile_id' => $profileId
+                            ];
+                        }
+                    }
+
+                    // Save nodes
+                    if ($append) {
+                        $existingNodes = read_csv($target_file);
+                        write_csv($target_file, array_merge($existingNodes, $nodesOnly));
+                    } else {
+                        write_csv($target_file, $nodesOnly);
+                    }
+
+                    // Save node-profile mappings
+                    if (!empty($nodeProfileMappings)) {
+                        $mappingFile = 'data/node_profile_mapping.csv';
+                        if ($append) {
+                            $existingMappings = read_csv($mappingFile);
+                            write_csv($mappingFile, array_merge($existingMappings, $nodeProfileMappings));
+                        } else {
+                            // If we didn't choose to append, we probably still want to keep other mappings
+                            // unless the user intended to overwrite EVERYTHING related to nodes.
+                            // But usually "Import Type: Nodes & PONs" refers to the nodes file.
+                            // Let's append mappings by default if we are adding nodes, to be safe.
+                            $existingMappings = read_csv($mappingFile);
+                            write_csv($mappingFile, array_merge($existingMappings, $nodeProfileMappings));
+                        }
+                    }
                 } else {
-                    write_csv($target_file, $newData);
+                    if ($append) {
+                        $existingData = read_csv($target_file);
+                        write_csv($target_file, array_merge($existingData, $newData));
+                    } else {
+                        write_csv($target_file, $newData);
+                    }
                 }
-                $message = "Successfully imported " . count($newData) . " records to " . $target_type;
+                $message = "Successfully imported records to " . $target_type;
             }
         } else {
             $error = "No data found in CSV or header mismatch.";
@@ -84,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <div>
                     <label>Import Type:</label>
                     <select name="type" required>
-                        <option value="nodes_pons">Nodes & PONs</option>
+                        <option value="nodes_pons">Nodes & PONs (can include profile_id column)</option>
                         <option value="packages">Speed Packages</option>
                         <option value="profiles">Profiles</option>
                         <option value="profile_packages">Packages to Profile Mapping</option>
