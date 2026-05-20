@@ -67,8 +67,10 @@ function ensure_csv_exists($filename) {
 function get_default_headers($filename) {
     $base = basename($filename);
     switch ($base) {
+        case 'towns_cities.csv':
+            return ['city_name', 'state'];
         case 'nodes_pons.csv':
-            return ['city', 'node_pon_id', 'node_pon_name'];
+            return ['city', 'node_pon_id', 'node_pon_name', 'type'];
         case 'speed_packages.csv':
             return ['State', 'Current Plan', 'CSG CODE', 'Download Speed', 'Upload Speed', 'Provisioning System Name'];
         case 'profiles.csv':

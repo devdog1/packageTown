@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             $target_file = '';
             $handle_special_nodes = false;
             switch ($target_type) {
+                case 'towns': $target_file = 'data/towns_cities.csv'; break;
                 case 'nodes_pons':
                     $target_file = 'data/nodes_pons.csv';
                     $handle_special_nodes = true;
@@ -42,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 $append = (isset($_POST['append']) && $_POST['append'] == '1');
 
                 if ($handle_special_nodes) {
-                    // Filter out profile_id from the nodes_pons data and handle it separately
                     $nodesOnly = [];
                     $nodeProfileMappings = [];
                     foreach ($newData as $row) {
@@ -57,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                         }
                     }
 
-                    // Save nodes
                     if ($append) {
                         $existingNodes = read_csv($target_file);
                         write_csv($target_file, array_merge($existingNodes, $nodesOnly));
@@ -65,20 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                         write_csv($target_file, $nodesOnly);
                     }
 
-                    // Save node-profile mappings
                     if (!empty($nodeProfileMappings)) {
                         $mappingFile = 'data/node_profile_mapping.csv';
-                        if ($append) {
-                            $existingMappings = read_csv($mappingFile);
-                            write_csv($mappingFile, array_merge($existingMappings, $nodeProfileMappings));
-                        } else {
-                            // If we didn't choose to append, we probably still want to keep other mappings
-                            // unless the user intended to overwrite EVERYTHING related to nodes.
-                            // But usually "Import Type: Nodes & PONs" refers to the nodes file.
-                            // Let's append mappings by default if we are adding nodes, to be safe.
-                            $existingMappings = read_csv($mappingFile);
-                            write_csv($mappingFile, array_merge($existingMappings, $nodeProfileMappings));
-                        }
+                        $existingMappings = read_csv($mappingFile);
+                        write_csv($mappingFile, array_merge($existingMappings, $nodeProfileMappings));
                     }
                 } else {
                     if ($append) {
@@ -111,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_profiles.php">Profiles</a></li>
@@ -130,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <div>
                     <label>Import Type:</label>
                     <select name="type" required>
+                        <option value="towns">Towns & Cities</option>
                         <option value="nodes_pons">Nodes & PONs (can include profile_id column)</option>
                         <option value="packages">Speed Packages</option>
                         <option value="profiles">Profiles</option>
@@ -153,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
             <h3>Download Templates</h3>
             <p>Use these templates to format your data for import:</p>
             <ul>
+                <li><a href="templates/towns_cities_template.csv" download>Towns & Cities Template</a></li>
                 <li><a href="templates/nodes_pons_template.csv" download>Nodes & PONs Template</a></li>
                 <li><a href="templates/speed_packages_template.csv" download>Speed Packages Template</a></li>
                 <li><a href="templates/profiles_template.csv" download>Profiles Template</a></li>

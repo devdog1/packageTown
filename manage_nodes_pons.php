@@ -2,6 +2,7 @@
 require_once 'csv_helper.php';
 
 $filename = 'data/nodes_pons.csv';
+$towns_file = 'data/towns_cities.csv';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -12,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_row = [
             'city' => $_POST['city'],
             'node_pon_id' => $_POST['node_pon_id'],
-            'node_pon_name' => $_POST['node_pon_name']
+            'node_pon_name' => $_POST['node_pon_name'],
+            'type' => $_POST['type']
         ];
         $rows[] = $new_row;
         write_csv($filename, $rows);
@@ -31,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $row['city'] = $_POST['city'];
                 $row['node_pon_id'] = $_POST['node_pon_id'];
                 $row['node_pon_name'] = $_POST['node_pon_name'];
+                $row['type'] = $_POST['type'];
             }
         }
         write_csv($filename, $rows);
@@ -39,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $nodes_pons = read_csv($filename);
+$towns = read_csv($towns_file);
+
 $edit_item = null;
 if (isset($_GET['edit'])) {
     foreach ($nodes_pons as $item) {
@@ -65,6 +70,7 @@ if (isset($_GET['edit'])) {
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_profiles.php">Profiles</a></li>
@@ -87,7 +93,14 @@ if (isset($_GET['edit'])) {
 
                 <div>
                     <label>City:</label>
-                    <input type="text" name="city" value="<?php echo $edit_item ? htmlspecialchars($edit_item['city']) : ''; ?>" required>
+                    <select name="city" required>
+                        <option value="">-- Select City --</option>
+                        <?php foreach ($towns as $town): ?>
+                            <option value="<?php echo htmlspecialchars($town['city_name']); ?>" <?php echo ($edit_item && $edit_item['city'] == $town['city_name']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($town['city_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div>
                     <label>Node/PON ID:</label>
@@ -96,6 +109,13 @@ if (isset($_GET['edit'])) {
                 <div>
                     <label>Node/PON Name:</label>
                     <input type="text" name="node_pon_name" value="<?php echo $edit_item ? htmlspecialchars($edit_item['node_pon_name']) : ''; ?>" required>
+                </div>
+                <div>
+                    <label>Type:</label>
+                    <select name="type" required>
+                        <option value="docsis" <?php echo ($edit_item && $edit_item['type'] == 'docsis') ? 'selected' : ''; ?>>Docsis (Node)</option>
+                        <option value="fiber" <?php echo ($edit_item && $edit_item['type'] == 'fiber') ? 'selected' : ''; ?>>Fiber (PON)</option>
+                    </select>
                 </div>
                 <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
                 <?php if ($edit_item): ?>
@@ -112,6 +132,7 @@ if (isset($_GET['edit'])) {
                         <th>City</th>
                         <th>ID</th>
                         <th>Name</th>
+                        <th>Type</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -121,6 +142,7 @@ if (isset($_GET['edit'])) {
                         <td><?php echo htmlspecialchars($item['city']); ?></td>
                         <td><?php echo htmlspecialchars($item['node_pon_id']); ?></td>
                         <td><?php echo htmlspecialchars($item['node_pon_name']); ?></td>
+                        <td><?php echo ucfirst(htmlspecialchars($item['type'])); ?></td>
                         <td>
                             <a href="?edit=<?php echo urlencode($item['node_pon_id']); ?>">Edit</a>
                             <form method="post" style="display:inline;">

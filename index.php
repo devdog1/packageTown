@@ -54,6 +54,7 @@
         <nav>
             <ul>
                 <li><a href="index.php">Dashboard</a></li>
+                <li><a href="manage_towns.php">Towns & Cities</a></li>
                 <li><a href="manage_nodes_pons.php">Nodes & PONs</a></li>
                 <li><a href="manage_packages.php">Speed Packages</a></li>
                 <li><a href="manage_profiles.php">Profiles</a></li>
@@ -81,6 +82,7 @@ function speed_to_mbps($speed_str) {
     return $value;
 }
 
+$towns = read_csv('data/towns_cities.csv');
 $nodes_pons = read_csv('data/nodes_pons.csv');
 $packages = read_csv('data/speed_packages.csv');
 $profiles = read_csv('data/profiles.csv');
@@ -111,16 +113,68 @@ foreach ($node_profile_mappings as $npm) {
     $node_profiles[$npm['node_pon_id']][] = $npm['profile_id'];
 }
 
-echo "<h2>System Overview</h2>";
+// City Summary Calculation
+$city_summary = [];
+foreach ($towns as $town) {
+    $name = $town['city_name'];
+    $city_summary[$name] = [
+        'state' => $town['state'],
+        'docsis_count' => 0,
+        'fiber_count' => 0,
+        'types' => []
+    ];
+}
+
+foreach ($nodes_pons as $item) {
+    $c = $item['city'];
+    if (!isset($city_summary[$c])) {
+        $city_summary[$c] = ['state' => 'Unknown', 'docsis_count' => 0, 'fiber_count' => 0, 'types' => []];
+    }
+    if ($item['type'] == 'docsis') {
+        $city_summary[$c]['docsis_count']++;
+        $city_summary[$c]['types']['docsis'] = true;
+    } else if ($item['type'] == 'fiber') {
+        $city_summary[$c]['fiber_count']++;
+        $city_summary[$c]['types']['fiber'] = true;
+    }
+}
+
+echo "<h2>City Summary</h2>";
+echo "<table id='citySummaryTable' class='display'>";
+echo "<thead><tr><th>City</th><th>State</th><th>Type</th><th>Node Count (Docsis)</th><th>PON Count (Fiber)</th></tr></thead>";
+echo "<tbody>";
+foreach ($city_summary as $name => $info) {
+    $type_str = "";
+    if (isset($info['types']['docsis']) && isset($info['types']['fiber'])) {
+        $type_str = "Both";
+    } elseif (isset($info['types']['docsis'])) {
+        $type_str = "Docsis";
+    } elseif (isset($info['types']['fiber'])) {
+        $type_str = "Fiber";
+    } else {
+        $type_str = "None";
+    }
+    echo "<tr>";
+    echo "<td>" . htmlspecialchars($name) . "</td>";
+    echo "<td>" . htmlspecialchars($info['state']) . "</td>";
+    echo "<td>" . $type_str . "</td>";
+    echo "<td>" . $info['docsis_count'] . "</td>";
+    echo "<td>" . $info['fiber_count'] . "</td>";
+    echo "</tr>";
+}
+echo "</tbody></table>";
+
+echo "<h2>Detailed Infrastructure Overview</h2>";
 if (empty($nodes_pons)) {
     echo "<p>No Nodes or PONs defined yet.</p>";
 } else {
     echo "<table id='overviewTable' class='display'>";
-    echo "<thead><tr><th>City</th><th>ID (Node/PON)</th><th>Name</th><th>Profiles & Packages</th></tr></thead>";
+    echo "<thead><tr><th>City</th><th>Type</th><th>ID</th><th>Name</th><th>Profiles & Packages</th></tr></thead>";
     echo "<tbody>";
     foreach ($nodes_pons as $item) {
         echo "<tr>";
         echo "<td>" . htmlspecialchars($item['city']) . "</td>";
+        echo "<td>" . ucfirst(htmlspecialchars($item['type'])) . "</td>";
         echo "<td>" . htmlspecialchars($item['node_pon_id']) . "</td>";
         echo "<td>" . htmlspecialchars($item['node_pon_name']) . "</td>";
 
@@ -180,6 +234,7 @@ if (empty($nodes_pons)) {
     </main>
     <script>
         $(document).ready( function () {
+            $('#citySummaryTable').DataTable();
             $('#overviewTable').DataTable({
                 "pageLength": 25
             });

@@ -1,4 +1,3 @@
-city,node_pon_id,node_pon_name,profile_id
-Los Angeles,LA-01,LA_West_Node,PROF-GOLD
-Chicago,CH-05,Chicago_Downtown_PON,PROF-SILVER
-Miami,MIA-02,Miami_Beach_Node,
+city,node_pon_id,node_pon_name,type,profile_id
+Los Angeles,LA-01,LA_West_Node,docsis,PROF-GOLD
+Chicago,CH-05,Chicago_Downtown_PON,fiber,PROF-SILVER
