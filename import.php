@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 <li><a href="manage_profiles.php">Profiles</a></li>
                 <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
+                <li><a href="api/docs.php" target="_blank">REST API</a></li>
             </ul>
         </nav>
     </header>

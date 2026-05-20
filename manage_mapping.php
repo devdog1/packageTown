@@ -67,6 +67,7 @@ foreach ($profiles as $p) $profile_lookup[$p['profile_id']] = $p['profile_name']
                 <li><a href="manage_profiles.php">Profiles</a></li>
                 <li><a href="manage_mapping.php">Node Mapping</a></li>
                 <li><a href="import.php">Bulk Import</a></li>
+                <li><a href="api/docs.php" target="_blank">REST API</a></li>
             </ul>
         </nav>
     </header>
