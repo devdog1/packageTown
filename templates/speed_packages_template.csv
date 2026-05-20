@@ -1,4 +1,3 @@
-package_id,package_name,download_speed,upload_speed
-PKG1,Basic,50Mbps,10Mbps
-PKG2,Standard,200Mbps,50Mbps
-PKG3,Premium,1Gbps,200Mbps
+State,Current Plan,CSG CODE,Download Speed,Upload Speed,Provisioning System Name
+CA,Standard,"CSG10, CSG11",200Mbps,50Mbps,ProvSysB
+FL,Premium,CSG99,1Gbps,200Mbps,ProvSysC

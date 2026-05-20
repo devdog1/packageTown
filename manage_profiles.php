@@ -22,14 +22,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $_POST['profile_id'];
         $rows = array_filter(read_csv($profiles_file), fn($r) => $r['profile_id'] !== $id);
         write_csv($profiles_file, array_values($rows));
-        // Also delete mappings
         $mappings = array_filter(read_csv($mapping_file), fn($m) => $m['profile_id'] !== $id);
         write_csv($mapping_file, array_values($mappings));
         $message = "Profile and its mappings deleted.";
     } elseif ($action === 'add_mapping') {
         $rows = read_csv($mapping_file);
         $new_mapping = ['profile_id' => $_POST['profile_id'], 'package_id' => $_POST['package_id']];
-        // Duplicate check
         $exists = false;
         foreach ($rows as $row) {
             if ($row['profile_id'] == $new_mapping['profile_id'] && $row['package_id'] == $new_mapping['package_id']) {
@@ -55,7 +53,9 @@ $packages = read_csv($packages_file);
 $mappings = read_csv($mapping_file);
 
 $pkg_lookup = [];
-foreach ($packages as $p) $pkg_lookup[$p['package_id']] = $p['package_name'] . " (" . $p['download_speed'] . "/" . $p['upload_speed'] . ")";
+foreach ($packages as $p) {
+    $pkg_lookup[$p['Current Plan']] = $p['Current Plan'] . " (" . $p['Download Speed'] . "/" . $p['Upload Speed'] . ") [" . $p['State'] . "]";
+}
 
 $profile_packages = [];
 foreach ($mappings as $m) {
@@ -121,7 +121,7 @@ foreach ($mappings as $m) {
                     <select name="package_id" required>
                         <option value="">-- Select Package --</option>
                         <?php foreach ($packages as $pkg): ?>
-                            <option value="<?php echo htmlspecialchars($pkg['package_id']); ?>"><?php echo htmlspecialchars($pkg_lookup[$pkg['package_id']]); ?></option>
+                            <option value="<?php echo htmlspecialchars($pkg['Current Plan']); ?>"><?php echo htmlspecialchars($pkg_lookup[$pkg['Current Plan']] ?? $pkg['Current Plan']); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>

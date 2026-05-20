@@ -1,2 +1,3 @@
-package_id,package_name,download_speed,upload_speed
-PKG1,Starter,100Mbps,20Mbps
+State,"Current Plan","CSG CODE","Download Speed","Upload Speed","Provisioning System Name"
+NY,Starter,"CSG01, CSG02",100Mbps,20Mbps,ProvSysA
+TX,Gigabit,GIG-001,1000Mbps,500Mbps,SystemX

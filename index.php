@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node and PON Management</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .pkg-details { font-size: 0.85em; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .pkg-name { font-weight: bold; color: #333; }
+    </style>
 </head>
 <body>
     <header>
@@ -33,7 +37,7 @@ $node_profile_mappings = read_csv('data/node_profile_mapping.csv');
 // Create a lookup for packages
 $package_lookup = [];
 foreach ($packages as $pkg) {
-    $package_lookup[$pkg['package_id']] = $pkg['package_name'] . " (" . $pkg['download_speed'] . " down / " . $pkg['upload_speed'] . " up)";
+    $package_lookup[$pkg['Current Plan']] = $pkg;
 }
 
 // Create a lookup for profiles
@@ -73,11 +77,21 @@ if (empty($nodes_pons)) {
                 $p_name = $profile_lookup[$profile_id] ?? $profile_id;
                 echo "<strong>Profile: " . htmlspecialchars($p_name) . "</strong>";
                 if (isset($profile_packages[$profile_id])) {
-                    echo "<ul>";
+                    echo "<div style='margin-left: 20px; margin-top: 10px;'>";
                     foreach ($profile_packages[$profile_id] as $pkg_id) {
-                        echo "<li>" . htmlspecialchars($package_lookup[$pkg_id] ?? $pkg_id) . "</li>";
+                        if (isset($package_lookup[$pkg_id])) {
+                            $pkg = $package_lookup[$pkg_id];
+                            echo "<div class='pkg-details'>";
+                            echo "<span class='pkg-name'>" . htmlspecialchars($pkg['Current Plan']) . "</span><br>";
+                            echo "Speeds: " . htmlspecialchars($pkg['Download Speed']) . " / " . htmlspecialchars($pkg['Upload Speed']) . "<br>";
+                            echo "State: " . htmlspecialchars($pkg['State']) . " | CSG: " . htmlspecialchars($pkg['CSG CODE']) . "<br>";
+                            echo "System: " . htmlspecialchars($pkg['Provisioning System Name']);
+                            echo "</div>";
+                        } else {
+                            echo "<div class='pkg-details'>Unknown Package: " . htmlspecialchars($pkg_id) . "</div>";
+                        }
                     }
-                    echo "</ul>";
+                    echo "</div>";
                 } else {
                     echo "<p><em>No packages in this profile.</em></p>";
                 }

@@ -4,35 +4,41 @@ require_once 'csv_helper.php';
 $filename = 'data/speed_packages.csv';
 $message = '';
 
+$fields = [
+    'State',
+    'Current Plan',
+    'CSG CODE',
+    'Download Speed',
+    'Upload Speed',
+    'Provisioning System Name'
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $rows = read_csv($filename);
 
     if ($action === 'add') {
-        $new_row = [
-            'package_id' => $_POST['package_id'],
-            'package_name' => $_POST['package_name'],
-            'download_speed' => $_POST['download_speed'],
-            'upload_speed' => $_POST['upload_speed']
-        ];
+        $new_row = [];
+        foreach ($fields as $f) {
+            $new_row[$f] = $_POST[str_replace(' ', '_', $f)];
+        }
         $rows[] = $new_row;
         write_csv($filename, $rows);
         $message = "Package added successfully.";
     } elseif ($action === 'delete') {
-        $id_to_delete = $_POST['package_id'];
-        $rows = array_filter($rows, function($row) use ($id_to_delete) {
-            return $row['package_id'] !== $id_to_delete;
+        $plan_to_delete = $_POST['current_plan'];
+        $rows = array_filter($rows, function($row) use ($plan_to_delete) {
+            return $row['Current Plan'] !== $plan_to_delete;
         });
         write_csv($filename, array_values($rows));
         $message = "Package deleted successfully.";
     } elseif ($action === 'update') {
-        $old_id = $_POST['old_package_id'];
+        $old_plan = $_POST['old_current_plan'];
         foreach ($rows as &$row) {
-            if ($row['package_id'] === $old_id) {
-                $row['package_id'] = $_POST['package_id'];
-                $row['package_name'] = $_POST['package_name'];
-                $row['download_speed'] = $_POST['download_speed'];
-                $row['upload_speed'] = $_POST['upload_speed'];
+            if ($row['Current Plan'] === $old_plan) {
+                foreach ($fields as $f) {
+                    $row[$f] = $_POST[str_replace(' ', '_', $f)];
+                }
             }
         }
         write_csv($filename, $rows);
@@ -44,7 +50,7 @@ $packages = read_csv($filename);
 $edit_item = null;
 if (isset($_GET['edit'])) {
     foreach ($packages as $item) {
-        if ($item['package_id'] === $_GET['edit']) {
+        if ($item['Current Plan'] === $_GET['edit']) {
             $edit_item = $item;
             break;
         }
@@ -81,25 +87,18 @@ if (isset($_GET['edit'])) {
             <form method="post">
                 <input type="hidden" name="action" value="<?php echo $edit_item ? 'update' : 'add'; ?>">
                 <?php if ($edit_item): ?>
-                    <input type="hidden" name="old_package_id" value="<?php echo htmlspecialchars($edit_item['package_id']); ?>">
+                    <input type="hidden" name="old_current_plan" value="<?php echo htmlspecialchars($edit_item['Current Plan']); ?>">
                 <?php endif; ?>
 
+                <?php foreach ($fields as $f):
+                    $id = str_replace(' ', '_', $f);
+                ?>
                 <div>
-                    <label>Package ID:</label>
-                    <input type="text" name="package_id" value="<?php echo $edit_item ? htmlspecialchars($edit_item['package_id']) : ''; ?>" required>
+                    <label><?php echo htmlspecialchars($f); ?>:</label>
+                    <input type="text" name="<?php echo $id; ?>" value="<?php echo $edit_item ? htmlspecialchars($edit_item[$f]) : ''; ?>" required>
                 </div>
-                <div>
-                    <label>Package Name:</label>
-                    <input type="text" name="package_name" value="<?php echo $edit_item ? htmlspecialchars($edit_item['package_name']) : ''; ?>" required>
-                </div>
-                <div>
-                    <label>Download Speed:</label>
-                    <input type="text" name="download_speed" value="<?php echo $edit_item ? htmlspecialchars($edit_item['download_speed']) : ''; ?>" placeholder="e.g. 100Mbps" required>
-                </div>
-                <div>
-                    <label>Upload Speed:</label>
-                    <input type="text" name="upload_speed" value="<?php echo $edit_item ? htmlspecialchars($edit_item['upload_speed']) : ''; ?>" placeholder="e.g. 20Mbps" required>
-                </div>
+                <?php endforeach; ?>
+
                 <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
                 <?php if ($edit_item): ?>
                     <a href="manage_packages.php">Cancel</a>
@@ -109,28 +108,26 @@ if (isset($_GET['edit'])) {
 
         <section>
             <h3>Existing Packages</h3>
-            <table>
+            <table style="font-size: 0.9em;">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Download</th>
-                        <th>Upload</th>
+                        <?php foreach ($fields as $f): ?>
+                            <th><?php echo htmlspecialchars($f); ?></th>
+                        <?php endforeach; ?>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($packages as $item): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($item['package_id']); ?></td>
-                        <td><?php echo htmlspecialchars($item['package_name']); ?></td>
-                        <td><?php echo htmlspecialchars($item['download_speed']); ?></td>
-                        <td><?php echo htmlspecialchars($item['upload_speed']); ?></td>
+                        <?php foreach ($fields as $f): ?>
+                            <td><?php echo htmlspecialchars($item[$f]); ?></td>
+                        <?php endforeach; ?>
                         <td>
-                            <a href="?edit=<?php echo urlencode($item['package_id']); ?>">Edit</a>
+                            <a href="?edit=<?php echo urlencode($item['Current Plan']); ?>">Edit</a>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="package_id" value="<?php echo htmlspecialchars($item['package_id']); ?>">
+                                <input type="hidden" name="current_plan" value="<?php echo htmlspecialchars($item['Current Plan']); ?>">
                                 <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
                             </form>
                         </td>
