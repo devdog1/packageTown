@@ -19,13 +19,18 @@ function read_csv($filename) {
     ensure_csv_exists($filename);
     $rows = [];
     if (($handle = fopen($filename, "r")) !== FALSE) {
+        // Fix for potentially malformed UTF-8 from older CSVs
         $headers = fgetcsv($handle);
+        if ($headers !== FALSE) {
+            foreach ($headers as &$h) $h = mb_convert_encoding($h, 'UTF-8', 'UTF-8');
+        }
         if ($headers === FALSE) {
             fclose($handle);
             return [];
         }
         while (($data = fgetcsv($handle)) !== FALSE) {
             if (count($headers) == count($data)) {
+                foreach ($data as &$val) $val = mb_convert_encoding($val, 'UTF-8', 'UTF-8');
                 $rows[] = array_combine($headers, $data);
             }
         }
