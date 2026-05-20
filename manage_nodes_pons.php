@@ -92,12 +92,12 @@ if (isset($_GET['edit'])) {
                 <?php endif; ?>
 
                 <div>
-                    <label>City:</label>
+                    <label>City (Geographic Area):</label>
                     <select name="city" required>
                         <option value="">-- Select City --</option>
                         <?php foreach ($towns as $town): ?>
-                            <option value="<?php echo htmlspecialchars($town['city_name']); ?>" <?php echo ($edit_item && $edit_item['city'] == $town['city_name']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($town['city_name']); ?>
+                            <option value="<?php echo htmlspecialchars($town['Geographic Area']); ?>" <?php echo ($edit_item && $edit_item['city'] == $town['Geographic Area']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($town['Geographic Area']); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

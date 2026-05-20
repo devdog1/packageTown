@@ -116,9 +116,12 @@ foreach ($node_profile_mappings as $npm) {
 // City Summary Calculation
 $city_summary = [];
 foreach ($towns as $town) {
-    $name = $town['city_name'];
+    $name = $town['Geographic Area'];
     $city_summary[$name] = [
-        'state' => $town['state'],
+        '2LA' => $town['2LA'],
+        '3LA' => $town['3LA'],
+        'CLLI' => $town['CLLI'],
+        'Location' => $town['Location'],
         'docsis_count' => 0,
         'fiber_count' => 0,
         'types' => []
@@ -128,7 +131,7 @@ foreach ($towns as $town) {
 foreach ($nodes_pons as $item) {
     $c = $item['city'];
     if (!isset($city_summary[$c])) {
-        $city_summary[$c] = ['state' => 'Unknown', 'docsis_count' => 0, 'fiber_count' => 0, 'types' => []];
+        $city_summary[$c] = ['2LA' => '', '3LA' => '', 'CLLI' => '', 'Location' => '', 'docsis_count' => 0, 'fiber_count' => 0, 'types' => []];
     }
     if ($item['type'] == 'docsis') {
         $city_summary[$c]['docsis_count']++;
@@ -141,7 +144,7 @@ foreach ($nodes_pons as $item) {
 
 echo "<h2>City Summary</h2>";
 echo "<table id='citySummaryTable' class='display'>";
-echo "<thead><tr><th>City</th><th>State</th><th>Type</th><th>Node Count (Docsis)</th><th>PON Count (Fiber)</th></tr></thead>";
+echo "<thead><tr><th>Geographic Area</th><th>2LA</th><th>3LA</th><th>CLLI</th><th>Location</th><th>Type</th><th>Nodes</th><th>PONs</th></tr></thead>";
 echo "<tbody>";
 foreach ($city_summary as $name => $info) {
     $type_str = "";
@@ -156,7 +159,10 @@ foreach ($city_summary as $name => $info) {
     }
     echo "<tr>";
     echo "<td>" . htmlspecialchars($name) . "</td>";
-    echo "<td>" . htmlspecialchars($info['state']) . "</td>";
+    echo "<td>" . htmlspecialchars($info['2LA']) . "</td>";
+    echo "<td>" . htmlspecialchars($info['3LA']) . "</td>";
+    echo "<td>" . htmlspecialchars($info['CLLI']) . "</td>";
+    echo "<td>" . (!empty($info['Location']) ? "<a href='".htmlspecialchars($info['Location'])."' target='_blank'>View Map</a>" : "") . "</td>";
     echo "<td>" . $type_str . "</td>";
     echo "<td>" . $info['docsis_count'] . "</td>";
     echo "<td>" . $info['fiber_count'] . "</td>";

@@ -68,7 +68,7 @@ function get_default_headers($filename) {
     $base = basename($filename);
     switch ($base) {
         case 'towns_cities.csv':
-            return ['city_name', 'state'];
+            return ['Geographic Area', '2LA', '3LA', 'CLLI', 'Location'];
         case 'nodes_pons.csv':
             return ['city', 'node_pon_id', 'node_pon_name', 'type'];
         case 'speed_packages.csv':

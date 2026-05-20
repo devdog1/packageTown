@@ -4,31 +4,34 @@ require_once 'csv_helper.php';
 $filename = 'data/towns_cities.csv';
 $message = '';
 
+$fields = ['Geographic Area', '2LA', '3LA', 'CLLI', 'Location'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $rows = read_csv($filename);
 
     if ($action === 'add') {
-        $new_row = [
-            'city_name' => $_POST['city_name'],
-            'state' => $_POST['state']
-        ];
+        $new_row = [];
+        foreach ($fields as $f) {
+            $new_row[$f] = $_POST[str_replace(' ', '_', $f)];
+        }
         $rows[] = $new_row;
         write_csv($filename, $rows);
         $message = "Town/City added successfully.";
     } elseif ($action === 'delete') {
-        $name = $_POST['city_name'];
+        $name = $_POST['geographic_area'];
         $rows = array_filter($rows, function($row) use ($name) {
-            return $row['city_name'] !== $name;
+            return $row['Geographic Area'] !== $name;
         });
         write_csv($filename, array_values($rows));
         $message = "Town/City deleted successfully.";
     } elseif ($action === 'update') {
-        $old_name = $_POST['old_city_name'];
+        $old_name = $_POST['old_geographic_area'];
         foreach ($rows as &$row) {
-            if ($row['city_name'] === $old_name) {
-                $row['city_name'] = $_POST['city_name'];
-                $row['state'] = $_POST['state'];
+            if ($row['Geographic Area'] === $old_name) {
+                foreach ($fields as $f) {
+                    $row[$f] = $_POST[str_replace(' ', '_', $f)];
+                }
             }
         }
         write_csv($filename, $rows);
@@ -40,7 +43,7 @@ $towns = read_csv($filename);
 $edit_item = null;
 if (isset($_GET['edit'])) {
     foreach ($towns as $item) {
-        if ($item['city_name'] === $_GET['edit']) {
+        if ($item['Geographic Area'] === $_GET['edit']) {
             $edit_item = $item;
             break;
         }
@@ -81,17 +84,18 @@ if (isset($_GET['edit'])) {
             <form method="post">
                 <input type="hidden" name="action" value="<?php echo $edit_item ? 'update' : 'add'; ?>">
                 <?php if ($edit_item): ?>
-                    <input type="hidden" name="old_city_name" value="<?php echo htmlspecialchars($edit_item['city_name']); ?>">
+                    <input type="hidden" name="old_geographic_area" value="<?php echo htmlspecialchars($edit_item['Geographic Area']); ?>">
                 <?php endif; ?>
 
+                <?php foreach ($fields as $f):
+                    $id = str_replace(' ', '_', $f);
+                ?>
                 <div>
-                    <label>City Name:</label>
-                    <input type="text" name="city_name" value="<?php echo $edit_item ? htmlspecialchars($edit_item['city_name']) : ''; ?>" required>
+                    <label><?php echo htmlspecialchars($f); ?>:</label>
+                    <input type="text" name="<?php echo $id; ?>" value="<?php echo $edit_item ? htmlspecialchars($edit_item[$f]) : ''; ?>" <?php echo ($f === 'Geographic Area') ? 'required' : ''; ?>>
                 </div>
-                <div>
-                    <label>State:</label>
-                    <input type="text" name="state" value="<?php echo $edit_item ? htmlspecialchars($edit_item['state']) : ''; ?>" required>
-                </div>
+                <?php endforeach; ?>
+
                 <button type="submit"><?php echo $edit_item ? 'Update' : 'Add'; ?></button>
                 <?php if ($edit_item): ?>
                     <a href="manage_towns.php">Cancel</a>
@@ -104,21 +108,29 @@ if (isset($_GET['edit'])) {
             <table id="townsTable" class="display">
                 <thead>
                     <tr>
-                        <th>City Name</th>
-                        <th>State</th>
+                        <?php foreach ($fields as $f): ?>
+                            <th><?php echo htmlspecialchars($f); ?></th>
+                        <?php endforeach; ?>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($towns as $item): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($item['city_name']); ?></td>
-                        <td><?php echo htmlspecialchars($item['state']); ?></td>
+                        <?php foreach ($fields as $f): ?>
+                            <td>
+                                <?php if ($f === 'Location' && !empty($item[$f])): ?>
+                                    <a href="<?php echo htmlspecialchars($item[$f]); ?>" target="_blank">View Map</a>
+                                <?php else: ?>
+                                    <?php echo htmlspecialchars($item[$f]); ?>
+                                <?php endif; ?>
+                            </td>
+                        <?php endforeach; ?>
                         <td>
-                            <a href="?edit=<?php echo urlencode($item['city_name']); ?>">Edit</a>
+                            <a href="?edit=<?php echo urlencode($item['Geographic Area']); ?>">Edit</a>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="city_name" value="<?php echo htmlspecialchars($item['city_name']); ?>">
+                                <input type="hidden" name="geographic_area" value="<?php echo htmlspecialchars($item['Geographic Area']); ?>">
                                 <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
                             </form>
                         </td>
