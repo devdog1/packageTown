@@ -1,9 +1,7 @@
 <?php
 
 function read_csv($filename) {
-    if (!file_exists($filename)) {
-        return [];
-    }
+    ensure_csv_exists($filename);
     $rows = [];
     if (($handle = fopen($filename, "r")) !== FALSE) {
         $headers = fgetcsv($handle);
@@ -23,9 +21,6 @@ function read_csv($filename) {
 
 function write_csv($filename, $rows) {
     if (empty($rows)) {
-        // If we want to clear the file but keep headers, we need to know what headers were.
-        // For simplicity, let's assume we always have at least one row or we handle it.
-        // Actually, let's keep headers if they exist.
         $headers = get_csv_headers($filename);
         if (($handle = fopen($filename, "w")) !== FALSE) {
             fputcsv($handle, $headers);
@@ -45,14 +40,46 @@ function write_csv($filename, $rows) {
 
 function get_csv_headers($filename) {
     if (!file_exists($filename)) {
-        return [];
+        return get_default_headers($filename);
     }
     if (($handle = fopen($filename, "r")) !== FALSE) {
         $headers = fgetcsv($handle);
         fclose($handle);
-        return $headers ? $headers : [];
+        return $headers ? $headers : get_default_headers($filename);
     }
-    return [];
+    return get_default_headers($filename);
+}
+
+function ensure_csv_exists($filename) {
+    if (!file_exists($filename)) {
+        $dir = dirname($filename);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $headers = get_default_headers($filename);
+        if (($handle = fopen($filename, "w")) !== FALSE) {
+            fputcsv($handle, $headers);
+            fclose($handle);
+        }
+    }
+}
+
+function get_default_headers($filename) {
+    $base = basename($filename);
+    switch ($base) {
+        case 'nodes_pons.csv':
+            return ['city', 'node_pon_id', 'node_pon_name'];
+        case 'speed_packages.csv':
+            return ['State', 'Current Plan', 'CSG CODE', 'Download Speed', 'Upload Speed', 'Provisioning System Name'];
+        case 'profiles.csv':
+            return ['profile_id', 'profile_name'];
+        case 'profile_package_mapping.csv':
+            return ['profile_id', 'package_id'];
+        case 'node_profile_mapping.csv':
+            return ['node_pon_id', 'profile_id'];
+        default:
+            return [];
+    }
 }
 
 function generate_id($rows, $id_key) {
